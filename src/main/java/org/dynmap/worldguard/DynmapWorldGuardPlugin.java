@@ -11,6 +11,7 @@ import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.sk89q.worldguard.protection.regions.*;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -37,10 +38,6 @@ import com.sk89q.worldguard.protection.flags.BooleanFlag;
 import com.sk89q.worldguard.protection.flags.Flag;
 import com.sk89q.worldguard.protection.flags.registry.FlagRegistry;
 import com.sk89q.worldguard.protection.managers.RegionManager;
-import com.sk89q.worldguard.protection.regions.ProtectedPolygonalRegion;
-import com.sk89q.worldguard.protection.regions.ProtectedRegion;
-import com.sk89q.worldguard.protection.regions.RegionContainer;
-import com.sk89q.worldguard.protection.regions.RegionType;
 
 public class DynmapWorldGuardPlugin extends JavaPlugin {
     private static Logger log;
@@ -118,6 +115,15 @@ public class DynmapWorldGuardPlugin extends JavaPlugin {
         v = v.replace("%groupowners%", region.getOwners().toGroupsString());
         v = v.replace("%playermembers%", region.getMembers().toPlayersString(pc));
         v = v.replace("%groupmembers%", region.getMembers().toGroupsString());
+
+        if (region instanceof ProtectedCuboidRegion) {
+            int[] size = DynmapWorldGuardPlugin.sizeOfCuboidRegion((ProtectedCuboidRegion) region);
+            v = v.replace("%height%", String.valueOf(size[0]));
+            v = v.replace("%width%", String.valueOf(size[1]));
+            v = v.replace("%squaresize%", String.valueOf(size[0]*size[1]));
+        }
+
+
         if(region.getParent() != null)
             v = v.replace("%parent%", region.getParent().getId());
         else
@@ -506,6 +512,15 @@ public class DynmapWorldGuardPlugin extends JavaPlugin {
         }
         resareas.clear();
         stop = true;
+    }
+
+    private static int[] sizeOfCuboidRegion(ProtectedCuboidRegion region) {
+        int x = region.getMinimumPoint().getBlockX();
+        int z = region.getMinimumPoint().getBlockZ();
+        int width = region.getMaximumPoint().getBlockX() - x + 1;
+        int height = region.getMaximumPoint().getBlockZ() - z + 1;
+
+        return new int[]{height, width};
     }
 
 }
